@@ -1,0 +1,25 @@
+#!/bin/rc
+
+rfork
+
+fn log{
+	echo $* >[1=2]
+}
+
+log bind `{pwd}^/bin
+bind -b `{pwd}^/bin /bin
+
+ramfs
+mkdir -p /tmp/www
+
+if(! test -r /n/chat/chat){
+	log /n/chat/chat not available!
+	exit 'chat not available'
+}
+log tail chat buffer
+tail -f /n/chat/chat > /tmp/www/chat.buf &
+
+bind -a /n/chat /tmp/www
+
+log running `{pwd}^/srv-http
+aux/listen1 -t 'tcp!*!80' `{pwd}^/srv-http

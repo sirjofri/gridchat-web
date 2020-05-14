@@ -1,0 +1,126 @@
+#!/bin/rc
+# 9p file handling.
+#
+# uses PUT for placing files
+# and GET with ranges (partial files)
+
+BS=256
+
+fn page{
+	echo serving full page $PATH_INFO >[1=2]
+	echo 'HTTP/1.1 200 OK'^$cr
+	echo 'Content-type: text/plain; charset=utf-8'^$cr
+	echo 'Content-length: '^$clength^$cr
+	echo 'Cache-control: max-age=0'^$cr
+	echo $cr
+	echo $content
+	exit
+}
+fn partial{
+	echo serving partial page $PATH_INFO :: $rangefrom^'-'^$rangeto >[1=2]
+	echo 'HTTP/1.1 206 Partial Content'^$cr
+	echo 'Content-type: text/plain; charset=utf-8'^$cr
+	if(~ $#rangeto 0)
+		echo 'Content-Range: bytes '^$rangefrom^'-'^$filelength^'/'^$filelength^$cr
+	if not
+		echo 'Content-Range: bytes '^$rangefrom^'-'^$rangeto^'/'^$filelength^$cr
+	echo 'Content-length: '^$clength^$cr
+	echo 'Cache-control: max-age=0'^$cr
+	echo $cr
+	echo $content
+	exit
+}
+
+fn rangelength{
+	if(~ $#rangeto 0){
+		echo $filelength^'-'^$rangefrom^'+1' | bc
+	}
+	if not{
+		echo $rangeto^'-'^$rangefrom^'+1' | bc
+	}
+}
+fn rangecontent{
+	seek=`{echo $rangefrom^'/'^$BS | bc}
+	if(~ $#rangeto 0){
+#		dd -if $NINE_ROOT^$PATH_INFO -ibs $BS -iseek $seek -quiet 1
+		getfilerange -f $NINE_ROOT^$PATH_INFO -s $rangefrom
+	}
+	if not{
+		getfilerange -f $NINE_ROOT^$PATH_INFO -s $rangefrom -e $rangeto
+#		blocks=`{echo $rangefrom^'/'^$BS | bc}
+#		dd -if $NINE_ROOT^$PATH_INFO -ibs $BS -iseek $seek -count $blocks -quiet 1
+#		seek=`{echo $blocks^'*'^$BS | bc}
+#		remaining=`{echo $clength^'-'^$seek | bc}
+#		dd -if $NINE_ROOT^$PATH_INFO -ibs 1 -iseek $seek -count $remaining -quiet 1
+	}
+}
+
+fn putdone{
+	echo 'HTTP/1.1 201 Created'^$cr
+	echo 'Content-Location: '^$PATH_INFO^$cr
+	echo $cr
+	exit
+}
+
+if(~ $REQUEST_METHOD GET){
+	if(test -d $NINE_ROOT^$PATH_INFO){
+		echo GET directory $PATH_INFO >[1=2]
+		content=`"{cd $NINE_ROOT^$PATH_INFO; ls -l}
+		clength=`{echo $content | wc -c}
+		page
+	}
+	if(! test -e $NINE_ROOT^$PATH_INFO){
+		echo error 404 >[1=2]
+		error 404
+		exit
+	}
+	if(! test -r $NINE_ROOT^$PATH_INFO){
+		echo error 503 >[1=2]
+		error 503
+		exit
+	}
+	if(! ~ $REQUEST_RANGE ''){
+		echo GET range $PATH_INFO $REQUEST_RANGE >[1=2]
+		filelength=`{ls -l $NINE_ROOT^$PATH_INFO | awk '{print $6}'}
+		rangefrom=`{echo $REQUEST_RANGE | sed 's/bytes=//;s/-.*$//'}
+		rangeto=`{echo $REQUEST_RANGE | sed 's/bytes=.*-//'}
+		clength=`{rangelength}
+		content=`"{rangecontent}
+		partial
+	}
+	echo GET file $PATH_INFO >[1=2]
+	clength=`{ls -l $NINE_ROOT^$PATH_INFO | awk '{print $6}'}
+	content=`"{
+		blocks=`{echo $clength^'/'^$BS | bc}
+		if(! ~ $blocks 0)
+			dd -if $NINE_ROOT^$PATH_INFO -ibs $BS -count $blocks -quiet 1
+		seek=`{echo $blocks^'*'^$BS | bc}
+		remaining=`{echo $clength^'-'^$seek | bc}
+#		dd -if $NINE_ROOT^$PATH_INFO -ibs 1 -iseek $seek -count $remaining -quiet 1
+		getfilerange -f $NINE_ROOT^$PATH_INFO -s $seek -e $clength
+	}
+	page
+}
+if(~ $REQUEST_METHOD PUT){
+	if(test -d $NINE_ROOT^$PATH_INFO){-e $NINE_ROOT^$PATH_INFO){
+		echo error 404 >[1=2]
+		error 404
+	}
+	if(! test -e $NINE_ROOT^$PATH_INFO){
+		echo error 404 >[1=2]
+		error 404
+	}
+	if(! test -r $NINE_ROOT^$PATH_INFO){
+		echo error 503 >[1=2]
+		error 503
+	}
+	content=`{
+		blocks=`{echo $CONTENT_LENGTH^'/'^$BS | bc}
+		dd -ibs $BS -count $blocks -quiet 1
+		remaining=`{echo $CONTENT_LENGTH^'-'^$blocks^'*'^$BS | bc}
+		dd -ibs 1 -count $remaining -quiet 1
+	}
+	echo PUT $PATH_INFO >[1=2]
+	echo $content > $NINE_ROOT^$PATH_INFO
+	putdone
+}

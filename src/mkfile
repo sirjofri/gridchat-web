@@ -1,0 +1,7 @@
+</$objtype/mkfile
+
+TARG=getfilerange
+OFILES=getfilerange.$O
+BIN=../bin
+
+</sys/src/cmd/mkone

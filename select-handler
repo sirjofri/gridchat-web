@@ -1,0 +1,21 @@
+#!/bin/rc
+
+PATH_INFO=$location
+
+# this is where your static html/javascript app is
+FS_ROOT=`{pwd}^/www
+
+# this is where your 9p root filesystem is
+NINE_ROOT=/tmp/www
+
+# rewrite app directory paths to index.html files
+if(~ $PATH_INFO '/chat/')
+	PATH_INFO='/chat/index.html'
+if(~ $PATH_INFO '/chat')
+	PATH_INFO='/chat/index.html'
+
+# "select handler"
+if(~ `{basename -d $PATH_INFO} '/chat')
+	exec serve-static
+if not
+	exec 9p.rc
