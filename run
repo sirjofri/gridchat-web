@@ -22,4 +22,4 @@ tail -f /n/chat/chat > /tmp/www/chat.buf &
 bind -a /n/chat /tmp/www
 
 log running `{pwd}^/srv-http
-aux/listen1 -t 'tcp!*!80' `{pwd}^/srv-http
+aux/listen1 -t 'tcp!*!8080' `{pwd}^/srv-http

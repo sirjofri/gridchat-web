@@ -102,7 +102,7 @@ if(~ $REQUEST_METHOD GET){
 	page
 }
 if(~ $REQUEST_METHOD PUT){
-	if(test -d $NINE_ROOT^$PATH_INFO){-e $NINE_ROOT^$PATH_INFO){
+	if(test -d $NINE_ROOT^$PATH_INFO){
 		echo error 404 >[1=2]
 		error 404
 	}

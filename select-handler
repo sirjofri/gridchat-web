@@ -9,13 +9,13 @@ FS_ROOT=`{pwd}^/www
 NINE_ROOT=/tmp/www
 
 # rewrite app directory paths to index.html files
-if(~ $PATH_INFO '/chat/')
-	PATH_INFO='/chat/index.html'
-if(~ $PATH_INFO '/chat')
-	PATH_INFO='/chat/index.html'
+if(~ $PATH_INFO '/app/')
+	PATH_INFO='/app/index.html'
+if(~ $PATH_INFO '/app')
+	PATH_INFO='/app/index.html'
 
 # "select handler"
-if(~ `{basename -d $PATH_INFO} '/chat')
+if(~ `{basename -d $PATH_INFO} '/app')
 	exec serve-static
 if not
 	exec 9p.rc
