@@ -1,0 +1,122 @@
+html, body {
+	width: 100%;
+	height: 100%;
+	margin: 0;
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	font-family: sans-serif;
+}
+
+textarea,
+html, body,
+input {
+	background-color: #ffffea;
+}
+
+header,
+#config {
+	background-color: #aeeeee;
+}
+
+a {
+	text-decoration: none;
+	color: black;
+}
+
+.configinput {
+	width: 100%;
+}
+
+header {
+	display: flex;
+	justify-content: space-between;
+	border: solid;
+	border-width: 0px 0px 2px 0px;
+	padding: 10px;
+}
+
+header h1 {
+	margin: 0;
+	padding: 0;
+}
+
+input {
+	height: 32px;
+}
+
+.col {
+	display: flex;
+	flex-direction: column;
+}
+
+.row {
+	display: flex;
+}
+
+#chatwindow {
+	flex-grow: 100;
+}
+
+#chatoutput {
+	height: 100%;
+	border: 0;
+}
+
+#chatinputrow {
+	border: solid;
+	border-width: 1px 0px 0px 0px;
+}
+
+#chatinput {
+	flex-grow: 100;
+	border: none;
+}
+
+.scrollable {
+	overflow: scroll;
+}
+
+.marg {
+	margin: 10px;
+}
+
+#log {
+	height: 50%;
+}
+
+#config {
+	position: fixed;
+	width: 100%;
+	height: 100%;
+}
+
+#configbutton {
+	font-size: 0;
+}
+#configbutton::after {
+	display: block;
+	height: 8px;
+	content: " ";
+	border: solid;
+	border-width: 0px 0px 8px 0px;
+	border-radius: 5px;
+	border-color: black;
+}
+#configbutton::before {
+	display: block;
+	content: " ";
+	width: 48px;
+	height: 8px;
+	border: solid;
+	border-width: 8px 0px;
+	border-radius: 5px 5px 0px 0px;
+	border-color: black;
+}
+
+#sendbutton {
+	display: block;
+	padding: 9px 15px;
+	border: solid;
+	border-width: 0px 0px 0px 1px;
+}
