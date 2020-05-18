@@ -7,7 +7,7 @@
 BS=256
 
 fn page{
-	echo serving full page $PATH_INFO >[1=2]
+	echo serve-ns: serving full page $PATH_INFO >[1=2]
 	echo 'HTTP/1.1 200 OK'^$cr
 	echo 'Content-type: text/plain; charset=utf-8'^$cr
 	echo 'Content-length: '^$clength^$cr
@@ -17,7 +17,7 @@ fn page{
 	exit
 }
 fn partial{
-	echo serving partial page $PATH_INFO :: $rangefrom^'-'^$rangeto >[1=2]
+	echo serve-ns: serving partial page $PATH_INFO :: $rangefrom^'-'^$rangeto >[1=2]
 	echo 'HTTP/1.1 206 Partial Content'^$cr
 	echo 'Content-type: text/plain; charset=utf-8'^$cr
 	if(~ $#rangeto 0)
@@ -62,25 +62,39 @@ fn putdone{
 	exit
 }
 
+{ # check .. paths
+	echo 'serve-ns: check .. paths' >[1=2]
+	ifs='/'
+	pathfields=`{echo -n $PATH_INFO}
+	ifs=' 	
+'
+	for(pathfield in $pathfields){
+		if(~ $pathfield *..*){
+			error 503
+			exit
+		}
+	}
+}
+
 if(~ $REQUEST_METHOD GET){
 	if(test -d $NINE_ROOT^$PATH_INFO){
-		echo GET directory $PATH_INFO >[1=2]
+		echo serve-ns: GET directory $PATH_INFO >[1=2]
 		content=`"{cd $NINE_ROOT^$PATH_INFO; ls -l}
 		clength=`{echo $content | wc -c}
 		page
 	}
 	if(! test -e $NINE_ROOT^$PATH_INFO){
-		echo error 404 >[1=2]
+		echo serve-ns: error 404 >[1=2]
 		error 404
 		exit
 	}
 	if(! test -r $NINE_ROOT^$PATH_INFO){
-		echo error 503 >[1=2]
+		echo serve-ns: error 503 >[1=2]
 		error 503
 		exit
 	}
 	if(! ~ $REQUEST_RANGE ''){
-		echo GET range $PATH_INFO $REQUEST_RANGE >[1=2]
+		echo serve-ns: GET range $PATH_INFO $REQUEST_RANGE >[1=2]
 		filelength=`{ls -l $NINE_ROOT^$PATH_INFO | awk '{print $6}'}
 		rangefrom=`{echo $REQUEST_RANGE | sed 's/bytes=//;s/-.*$//'}
 		rangeto=`{echo $REQUEST_RANGE | sed 's/bytes=.*-//'}
@@ -103,15 +117,15 @@ if(~ $REQUEST_METHOD GET){
 }
 if(~ $REQUEST_METHOD PUT){
 	if(test -d $NINE_ROOT^$PATH_INFO){
-		echo error 404 >[1=2]
+		echo serve-ns: error 404 >[1=2]
 		error 404
 	}
 	if(! test -e $NINE_ROOT^$PATH_INFO){
-		echo error 404 >[1=2]
+		echo serve-ns: error 404 >[1=2]
 		error 404
 	}
 	if(! test -r $NINE_ROOT^$PATH_INFO){
-		echo error 503 >[1=2]
+		echo serve-ns: error 503 >[1=2]
 		error 503
 	}
 	content=`{
@@ -120,7 +134,7 @@ if(~ $REQUEST_METHOD PUT){
 		remaining=`{echo $CONTENT_LENGTH^'-'^$blocks^'*'^$BS | bc}
 		dd -ibs 1 -count $remaining -quiet 1
 	}
-	echo PUT $PATH_INFO >[1=2]
+	echo serve-ns: PUT $PATH_INFO >[1=2]
 	echo $content > $NINE_ROOT^$PATH_INFO
 	putdone
 }
