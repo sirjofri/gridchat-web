@@ -84,8 +84,12 @@ openConfig = () => {
 };
 
 send = () => {
-	log("send");
 	var data = Get("chatinput").value;
+	if(data.trim().length == 0) {
+		log("don't send: empty string");
+		return;
+	}
+	log("send");
 	var username = localStorage.getItem("username");
 	if(!username) username = "webuser";
 	var headers;
