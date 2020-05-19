@@ -1,0 +1,42 @@
+#!/bin/rc
+
+rfork
+
+cr='
+'
+
+bind -b `{pwd}^/bin /bin
+
+fn error{
+	echo '- test: error $1'
+}
+
+fn testservenamespace{
+	echo test: serve-namespace/9p.rc
+	ramfs
+	NINE_ROOT=/tmp
+	PATH_INFO=/chat.buf
+	REQUEST_METHOD=GET
+	REQUEST_RANGE=''
+	
+	echo '- test: expected: error 404'
+	9p.rc >[1=2]
+	echo -n lorem >/tmp/chat.buf
+	echo '- test: expected: lorem'
+	9p.rc
+	echo '- test: expected: re'
+	REQUEST_RANGE='bytes=2-4'
+	9p.rc
+	echo '- test: expected: rem'
+	REQUEST_RANGE='bytes=2-'
+	9p.rc
+	echo '- test: expected: ipsum'
+	REQUEST_RANGE='bytes=5-'
+	9p.rc &
+	nspid=$apid
+	sleep 1
+	echo -n ' ipsum dolor' >>/tmp/chat.buf
+	wait $nspid
+}
+
+testservenamespace

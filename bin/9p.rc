@@ -4,7 +4,7 @@
 # uses PUT for placing files
 # and GET with ranges (partial files)
 
-BS=256
+BS=256 # used for dd only
 
 fn page{
 	echo serve-ns: serving full page $PATH_INFO >[1=2]
@@ -62,7 +62,8 @@ fn putdone{
 	exit
 }
 
-{ # check .. paths
+# check .. paths
+{
 	echo 'serve-ns: check .. paths' >[1=2]
 	ifs='/'
 	pathfields=`{echo -n $PATH_INFO}
@@ -98,6 +99,14 @@ if(~ $REQUEST_METHOD GET){
 		filelength=`{ls -l $NINE_ROOT^$PATH_INFO | awk '{print $6}'}
 		rangefrom=`{echo $REQUEST_RANGE | sed 's/bytes=//;s/-.*$//'}
 		rangeto=`{echo $REQUEST_RANGE | sed 's/bytes=.*-//'}
+		while(test $rangefrom -ge $filelength){
+			rangefrom=$filelength
+			filelength=`{ls -l $NINE_ROOT^$PATH_INFO | awk '{print $6}'}
+			rangeto=$filelength
+		}
+		if(~ $rangeto ''){
+			rangeto=$filelength
+		}
 		clength=`{rangelength}
 		content=`"{rangecontent}
 		partial
