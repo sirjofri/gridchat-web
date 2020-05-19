@@ -16,6 +16,6 @@ if(~ $PATH_INFO '/app')
 
 # "select handler"
 if(~ `{basename -d $PATH_INFO} '/app')
-	exec serve-static
+	exec serve-static-modern
 if not
 	exec 9p.rc
