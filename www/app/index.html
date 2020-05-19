@@ -11,25 +11,29 @@
 <body>
 <header>
 	<h1>gridchat web</h1>
-	<a href="#" onclick="openConfig()" id="configbutton">config</a>
+	<!--a href="#" id="prefetchbutton" earlier /a-->
+	<a href="#" id="configbutton">config</a>
 </header>
 <div id="chatwindow" class="col">
 	<textarea id="chatoutput" readonly>
 	</textarea>
 	<div class="row" id="chatinputrow">
 		<input type="text" id="chatinput">
-		<a href="#" onclick="send()" id="sendbutton">Send</a>
+		<a href="#" id="sendbutton">Send</a>
 	</div>
 </div>
 <div id="config" style="display:none;">
 	<div class="marg">
 	<h2>Configuration</h2>
-	<label for="username">Username:</label>
+	<label for="username">Username:</label><br>
 	<input type="text" placeholder="username" id="username" class="configinput">
+	<br>
+	<label for="prefetch">Prefetch:</label><br>
+	<input type="number" id="prefetch" disabled>
 	<br><br>
-	<input type="button" onclick="saveConfig()" value="save">
-	<input type="button" onclick="reloadform()" value="reload">
-	<input type="button" onclick="closeConfig()" value="close">
+	<input type="button" id="saveconfigbutton" value="save">
+	<input type="button" id="reloadconfigbutton" value="reload">
+	<input type="button" id="closeconfigbutton" value="close">
 	<hr>
 	<b>Log:</b>
 	<div class="scrollable" id="log">

@@ -4,9 +4,24 @@ window.onload = () => {
 	if("serviceWorker" in navigator) {
 		navigator.serviceWorker.register("/app/service-worker.js");
 	}
+	initialize();
 	reloadform();
-	timer = setInterval(fetchChat, 1000);
-	log("started timer");
+	loadchat(null);
+};
+
+initialize = () => {
+	// Get("prefetchbutton").addEventListener("click", loadEarlier);
+	Get("configbutton").addEventListener("click", openConfig);
+	Get("sendbutton").addEventListener("click", send);
+	Get("saveconfigbutton").addEventListener("click", saveConfig);
+	Get("reloadconfigbutton").addEventListener("click", reloadform);
+	Get("closeconfigbutton").addEventListener("click", closeConfig);
+	Get("chatinput").addEventListener("keyup", (e) => {
+		if(e.keyCode === 13){
+			send();
+			e.preventDefault();
+		}
+	});
 };
 
 reloadform = () => {
@@ -16,59 +31,36 @@ reloadform = () => {
 	log("reloaded form");
 };
 
-var currentbyte = 0;
-var newcurrent = 0;
+var currentbyte = 1;
 
 loadchat = (data) => {
-	to = newcurrent;
-	from = (currentbyte == 0 ? to-8192 : currentbyte); // to-prefetch value
-	if(from < 0) from = 0;
-	if(to <= 0) {
-		log("no content");
-		return;
-	}
-	if(to <= from) {
-		return;
-	}
-	currentbyte = newcurrent;
 	var headers;
+	var response;
 	fetch("/chat.buf", {
 		method: "GET",
 		headers: {
-			"Range": "bytes=" + from + "-" + to
+			"Range": "bytes=" + currentbyte + "-"
 		}
 	})
 	.then((resp) => {
+		response = resp;
 		headers = resp.headers;
+		if(resp.status == 502){ // Timeout
+			return Promise.reject(resp);
+		}
 		return resp.text();
+	}, (error) => {
+		if(error.status == 502){ // Timeout
+			log("timeout. Retry");
+			loadchat(null);
+		} else
+			log("error: " + error);
 	})
 	.then((data) => {
 		Get("chatoutput").innerHTML += "\r\n" + data.trim();
+		currentbyte += (new TextEncoder().encode(data.trim())).length+1;
 		Get("chatoutput").scrollTop = Get("chatoutput").scrollHeight;
-	})
-	.catch((error) => {
-		log("error: " + error);
-	});
-};
-
-fetchChat = () => {
-	fetch("/")
-	.then((resp) => resp.text())
-	.then((data) => {
-		strings = data.split('\n');
-		for(var i=0; i<strings.length; i++) {
-			if(strings[i].includes("chat.buf")) {
-				newcurrent = (strings[i].split(/\s+/))[5];
-			}
-		}
-	})
-	.then(loadchat)
-	.catch((error) => {
-		log("error: " + error);
-		clearInterval(timer);
-		Get("chatoutput").innerHTML = "server error!";
-		Get("chatinput").disabled = true;
-		Get("sendbutton").disabled = true;
+		loadchat(null);
 	});
 };
 
@@ -91,7 +83,7 @@ send = () => {
 	}
 	log("send");
 	var username = localStorage.getItem("username");
-	if(!username) username = "webuser";
+	if(!username) username = "/usr/websh*t";
 	var headers;
 	fetch("/chat", {
 		method: "PUT",
