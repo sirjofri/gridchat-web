@@ -31,3 +31,5 @@ Additional Information
   (`bin/serve-static-modern`).
 - We understand Ranges like `bytes=1-2` and `bytes=1-`, but _no_
   combinations like `bytes=1-2, 5-6`.
+- To use the progressive web app features without https, you can whitelist
+  the domain (in chome at least). See the `chrome://flags`.
