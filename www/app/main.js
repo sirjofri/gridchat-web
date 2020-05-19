@@ -2,7 +2,7 @@ var timer;
 
 window.onload = () => {
 	if("serviceWorker" in navigator) {
-		navigator.serviceWorker.register("/chat/service-worker.js");
+		navigator.serviceWorker.register("/app/service-worker.js");
 	}
 	reloadform();
 	timer = setInterval(fetchChat, 1000);
@@ -21,7 +21,7 @@ var newcurrent = 0;
 
 loadchat = (data) => {
 	to = newcurrent;
-	from = (currentbyte == 0 ? to-1024 : currentbyte); // to-prefetch value
+	from = (currentbyte == 0 ? to-8192 : currentbyte); // to-prefetch value
 	if(from < 0) from = 0;
 	if(to <= 0) {
 		log("no content");
