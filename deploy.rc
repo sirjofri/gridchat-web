@@ -1,5 +1,5 @@
 #!/bin/rc
-# rimport host /path/to/gridchat-web /n/gridchat-web
+# rimport -c host /path/to/gridchat-web /n/gridchat-web
 
 { cd src && mk install && cd .. } || exit 'cannot build'
 
