@@ -11,7 +11,6 @@ window.onload = () => {
 };
 
 initialize = () => {
-	// Get("prefetchbutton").addEventListener("click", loadEarlier);
 	Get("configbutton").addEventListener("click", openConfig);
 	Get("sendbutton").addEventListener("click", send);
 	Get("saveconfigbutton").addEventListener("click", saveConfig);
