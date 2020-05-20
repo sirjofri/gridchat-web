@@ -1,0 +1,6 @@
+#!/bin/rc
+# rimport host /path/to/gridchat-web /n/gridchat-web
+
+{ cd src && mk install && cd .. } || exit 'cannot build'
+
+disk/mkfs -d /n/gridchat-web -s . -r deploy.proto && echo 'deployed'
