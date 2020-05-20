@@ -81,6 +81,7 @@ send = () => {
 		log("don't send: empty string");
 		return;
 	}
+	Get("chatinput").value = "";
 	log("send");
 	var username = localStorage.getItem("username");
 	if(!username) username = "/usr/websh*t";
@@ -90,7 +91,6 @@ send = () => {
 		body: (username + " → " + data)
 	})
 	.then((resp) => {
-		Get("chatinput").value = "";
 		log("PUT data");
 	})
 	.catch((error) => {
