@@ -59,7 +59,7 @@ input {
 }
 
 #chatoutput {
-	height: 100%;
+	flex-grow: 100;
 	border: 0;
 }
 
