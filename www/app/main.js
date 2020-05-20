@@ -1,5 +1,3 @@
-var timer;
-
 window.onload = () => {
 	if("serviceWorker" in navigator) {
 		navigator.serviceWorker.register("/app/service-worker.js");
@@ -7,6 +5,9 @@ window.onload = () => {
 	initialize();
 	reloadform();
 	loadchat(null);
+	window.addEventListener("resize", () => {
+		Get("chatoutput").scrollTop = Get("chatoutput").scrollHeight;
+	});
 };
 
 initialize = () => {
