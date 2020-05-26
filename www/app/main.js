@@ -4,6 +4,9 @@ window.onload = () => {
 	}
 	initialize();
 	reloadform();
+	if(localStorage.getItem("autosendjoin") == "true") {
+		autosend("JOIN " + getUser() + " to chat (web client)");
+	}
 	loadchat(true);
 	window.addEventListener("resize", () => {
 		Get("chatoutput").scrollTop = Get("chatoutput").scrollHeight;
@@ -33,6 +36,9 @@ reloadform = () => {
 	var username = localStorage.getItem("username");
 	if(username)
 		Get("username").value = username;
+	var autosendjoin = localStorage.getItem("autosendjoin") == "true";
+	if(autosendjoin)
+		Get("autosendjoin").checked = autosendjoin;
 	log("reloaded form");
 };
 
@@ -83,6 +89,12 @@ openConfig = () => {
 	Get("config").style.display = "block";
 };
 
+getUser = () => {
+	var username = localStorage.getItem("username");
+	if(!username) username = "/usr/websh*t";
+	return username;
+};
+
 send = () => {
 	var data = Get("chatinput").value;
 	if(data.trim().length == 0) {
@@ -91,12 +103,10 @@ send = () => {
 	}
 	Get("chatinput").value = "";
 	log("send");
-	var username = localStorage.getItem("username");
-	if(!username) username = "/usr/websh*t";
 	var headers;
 	fetch("/chat", {
 		method: "PUT",
-		body: (username + " → " + data)
+		body: (getUser() + " → " + data)
 	})
 	.then((resp) => {
 		log("PUT data");
@@ -106,9 +116,28 @@ send = () => {
 	});
 };
 
+autosend = (text) => {
+	if(text.trim().length == 0) {
+		log("don't send: empty string");
+		return;
+	}
+	log("autosend");
+	fetch("/chat", {
+		method: "PUT",
+		body: text
+	})
+	.then((resp) => {
+		log("PUT data autosend");
+	})
+	.catch((error) => {
+		log("PUT error autosend: " + error);
+	});
+}
+
 saveConfig = () => {
 	log("saveConfig");
 	localStorage.setItem("username", Get("username").value);
+	localStorage.setItem("autosendjoin", Get("autosendjoin").checked ? "true" : "false");
 };
 
 closeConfig = () => {
