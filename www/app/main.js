@@ -4,10 +4,15 @@ window.onload = () => {
 	}
 	initialize();
 	reloadform();
-	loadchat(null);
+	loadchat(true);
 	window.addEventListener("resize", () => {
 		Get("chatoutput").scrollTop = Get("chatoutput").scrollHeight;
 	});
+};
+
+canScroll = () => {
+	var o = Get("chatoutput");
+	return (o.scrollTop + o.offsetHeight == o.scrollHeight);
 };
 
 initialize = () => {
@@ -33,9 +38,10 @@ reloadform = () => {
 
 var currentbyte = 1;
 
-loadchat = (data) => {
+loadchat = (first) => {
 	var headers;
 	var response;
+
 	fetch("/chat.buf", {
 		method: "GET",
 		headers: {
@@ -57,10 +63,12 @@ loadchat = (data) => {
 			log("error: " + error);
 	})
 	.then((data) => {
+		var doscroll = first || canScroll();
 		Get("chatoutput").innerHTML += "\r\n" + data.trim();
 		currentbyte += (new TextEncoder().encode(data.trim())).length+1;
-		Get("chatoutput").scrollTop = Get("chatoutput").scrollHeight;
-		loadchat(null);
+		if(doscroll)
+			Get("chatoutput").scrollTop = Get("chatoutput").scrollHeight;
+		loadchat(false);
 	});
 };
 
