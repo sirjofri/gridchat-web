@@ -42,41 +42,32 @@ reloadform = () => {
 	log("reloaded form");
 };
 
-var currentbyte = 1;
+var currentbyte = 0;
 
-loadchat = (first) => {
-	var headers;
-	var response;
-
-	fetch("/chat.buf", {
+async function loadchat(first) {
+	let response = await fetch("/chat.buf", {
 		method: "GET",
 		headers: {
 			"Range": "bytes=" + currentbyte + "-"
 		}
-	})
-	.then((resp) => {
-		response = resp;
-		headers = resp.headers;
-		if(resp.status == 502){ // Timeout
-			return Promise.reject(resp);
-		}
-		return resp.text();
-	}, (error) => {
-		if(error.status == 502){ // Timeout
-			log("timeout. Retry");
-			loadchat(null);
-		} else
-			log("error: " + error);
-	})
-	.then((data) => {
+	});
+	if(response.status == 502){
+		log("timeout. Retry");
+		await loadchat(first);
+	} else if(response.status != 200 && response.status != 206){
+		log("error: "+response.statusText);
+		await new Promise(resolve => setTimeout(resolve, 1000));
+		await loadchat(first);
+	} else {
+		let message = (await response.text()).trim();
 		var doscroll = first || canScroll();
-		Get("chatoutput").innerHTML += "\r\n" + data.trim();
-		currentbyte += (new TextEncoder().encode(data.trim())).length+1;
+		Get("chatoutput").innerHTML += "\r\n" + message;
+		currentbyte += (new TextEncoder().encode(message)).length+1;
 		if(doscroll)
 			Get("chatoutput").scrollTop = Get("chatoutput").scrollHeight;
 		loadchat(false);
-	});
-};
+	}
+}
 
 Get = (id) => { return document.getElementById(id); };
 

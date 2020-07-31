@@ -13,11 +13,11 @@ fn page{
 	echo 'Content-length: '^$clength^$cr
 	echo 'Cache-control: max-age=0'^$cr
 	echo $cr
-	echo $content
+	echo $"content
 	exit
 }
 fn partial{
-	echo serve-ns: serving partial page $PATH_INFO :: $rangefrom^'-'^$rangeto >[1=2]
+	echo serve-ns: serving partial page $PATH_INFO :: $rangefrom^'-'^$rangeto :: $filelength >[1=2]
 	echo 'HTTP/1.1 206 Partial Content'^$cr
 	echo 'Content-type: text/plain; charset=utf-8'^$cr
 	if(~ $#rangeto 0)
@@ -27,7 +27,7 @@ fn partial{
 	echo 'Content-length: '^$clength^$cr
 	echo 'Cache-control: max-age=0'^$cr
 	echo $cr
-	echo $content
+	rangecontent
 	exit
 }
 
@@ -46,7 +46,7 @@ fn rangecontent{
 		getfilerange -f $NINE_ROOT^$PATH_INFO -s $rangefrom
 	}
 	if not{
-		getfilerange -f $NINE_ROOT^$PATH_INFO -s $rangefrom -e $rangeto
+		getfilerange -f $NINE_ROOT^$PATH_INFO -s $rangefrom -e `{echo $rangeto '+1' | bc}
 #		blocks=`{echo $rangefrom^'/'^$BS | bc}
 #		dd -if $NINE_ROOT^$PATH_INFO -ibs $BS -iseek $seek -count $blocks -quiet 1
 #		seek=`{echo $blocks^'*'^$BS | bc}
@@ -102,18 +102,17 @@ if(~ $REQUEST_METHOD GET){
 		while(test $rangefrom -ge $filelength){
 			rangefrom=$filelength
 			filelength=`{ls -l $NINE_ROOT^$PATH_INFO | awk '{print $6}'}
-			rangeto=$filelength
+			rangeto=`{echo $filelength '-1' | bc}
 		}
 		if(~ $rangeto ''){
-			rangeto=$filelength
+			rangeto=`{echo $filelength '-1' | bc}
 		}
 		clength=`{rangelength}
-		content=`"{rangecontent}
 		partial
 	}
 	echo GET file $PATH_INFO >[1=2]
 	clength=`{ls -l $NINE_ROOT^$PATH_INFO | awk '{print $6}'}
-	content=`"{
+	content=`{
 		blocks=`{echo $clength^'/'^$BS | bc}
 		if(! ~ $blocks 0)
 			dd -if $NINE_ROOT^$PATH_INFO -ibs $BS -count $blocks -quiet 1
