@@ -6,6 +6,16 @@ fn log{
 	echo $* >[1=2]
 }
 
+fn sigkill{
+	echo KILL >[1=2]
+	test -d /proc/$catpid && echo kill >/proc/$catpid/note
+	test -d /proc/$lstpid && echo kill >/proc/$lstpid/note
+	sleep 1
+	test -d /proc/$catpid && echo kill >/proc/$catpid/ctl
+	test -d /proc/$lstpid && echo kill >/proc/$lstpid/ctl
+	exit
+}
+
 log bind `{pwd}^/bin
 bind -b `{pwd}^/bin /bin
 
@@ -16,10 +26,14 @@ if(! test -r /n/chat/chat){
 	log /n/chat/chat not available!
 	exit 'chat not available'
 }
-log tail chat buffer
-tail -f /n/chat/chat > /tmp/www/chat.buf &
+log cat chat buffer
+cat /n/chat/chat > /tmp/www/chat.buf &
+catpid=$apid
 
 bind -a /n/chat /tmp/www
 
 log running `{pwd}^/srv-http
-aux/listen1 -t 'tcp!*!8080' `{pwd}^/srv-http
+aux/listen1 -t 'tcp!*!8080' `{pwd}^/srv-http &
+lstpid=$apid
+
+wait
