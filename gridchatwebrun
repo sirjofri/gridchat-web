@@ -16,24 +16,32 @@ fn sigkill{
 	exit
 }
 
-log bind `{pwd}^/bin
-bind -b `{pwd}^/bin /bin
-
-ramfs
-mkdir -p /tmp/www
-
 if(! test -r /n/chat/chat){
 	log /n/chat/chat not available!
 	exit 'chat not available'
 }
+
+log bind /bin
+bind -b bin /bin
+
+ramfs
+mkdir -p /tmp/usr/web
+mkdir -p /tmp/lib
+
+cat <<. >/tmp/lib/namespace.httpd
+.
+bind /tmp/lib/namespace.httpd /lib/namespace.httpd
+
 log cat chat buffer
-cat /n/chat/chat > /tmp/www/chat.buf &
+cat /n/chat/chat > /tmp/usr/web/chat.buf &
 catpid=$apid
 
-bind -a /n/chat /tmp/www
+bind -a www /tmp/usr/web
+bind -a /n/chat /tmp/usr/web
+bind /tmp/usr /usr
 
-log running `{pwd}^/srv-http
-aux/listen1 -t 'tcp!*!8080' `{pwd}^/srv-http &
+log running /bin/tcp80 -w
+aux/listen1 -t 'tcp!*!8080' /bin/tcp80 -w &
 lstpid=$apid
 
 wait

@@ -1,7 +1,6 @@
 </$objtype/mkfile
 
-TARG=getfilerange
-OFILES=getfilerange.$O
 BIN=../bin
+TARG=getfilerange tcp80
 
-</sys/src/cmd/mkone
+</sys/src/cmd/mkmany
