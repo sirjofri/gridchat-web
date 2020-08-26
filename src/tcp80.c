@@ -4,7 +4,9 @@
 #include <auth.h>
 
 char *HTTP200 = "200 Ok";
+char *HTTP206 = "206 Partial content";
 char *HTTP301 = "301 Moved Permanently";
+char *HTTP304 = "304 Not Modified";
 char *HTTP403 = "403 Forbidden";
 char *HTTP404 = "404 Not found";
 char *HTTP405 = "405 Method Not Allowed";
@@ -233,6 +235,10 @@ headers(char *path, Dir *d)
 	isdir = d && (d->qid.type & QTDIR);
 	if(isdir || cistrstr(path, ".htm"))
 		print("Content-Type: text/html; charset=utf-8\r\n");
+	if(isdir || cistrstr(path, ".css"))
+		print("Content-Type: text/css; charset=utf-8\r\n");
+	if(isdir || cistrstr(path, ".js"))
+		print("Content-Type: text/javascript; charset=utf-8\r\n");
 	if(*path == '/')
 		print("Content-Location: %s%s\r\n",
 			urlenc(buf, path, sizeof(buf)), isdir ? "/" : "");
@@ -368,7 +374,7 @@ httpget(int nobody)
 		if(noslash){
 			status = HTTP301;
 			respond(status);
-			headers(buf, d);
+			headers(file, d);
 
 			h = findhdr(nil, "Host");
 			p = strchr(location, '?');
@@ -403,8 +409,8 @@ httpget(int nobody)
 			}
 		}
 
-		respond("200 OK");
-		headers(buf, d);
+		respond(HTTP200);
+		headers(file, d);
 		print("\r\n");
 		if(nobody)
 			goto Out;
@@ -447,8 +453,8 @@ Filecont:
 
 			if((t = hdate(h->val)) != -1){
 				if(d->mtime <= t){
-					respond("304 Not Modified");
-					headers(buf, d);
+					respond(HTTP304);
+					headers(file, d);
 					print("\r\n");
 					goto Out;
 				}
@@ -470,19 +476,43 @@ Filecont:
 				end = d->length;
 			else
 				end = strtoll(s, &s, 10)+1;
-			if(*s != 0 || (end <= start))
+			if(start == d->length) /* long polling */
+				goto Content;
+			if(*s != 0 || (end < start))
 				break;
-			respond("206 Partial content");
+			respond(HTTP206);
 			print("Content-Range: bytes %lld-%lld/%lld\r\n",
 				start, end-1, d->length);
 			goto Content;
 		}
 		start = 0;
 		end = d->length;
-		respond("200 OK");
+		respond(HTTP200);
 Content:
-		headers(buf, d);
+		if(start == d->length){   /* long polling */
+			while(pread(fd, buf, 1, start) == 0){
+				; /* do nothing, wait for bytes to read */
+			}
+			free(d);
+			if((d = dirfstat(fd)) == nil){
+				close(fd);
+				status = HTTP500;
+				errorout(0, 0, status);
+				return -1;
+			}
+			respond(HTTP206);
+			headers(file, d);
+			print("Content-Range: bytes %lld-%lld/%lld\r\n",
+				start, d->length-1, d->length);
+			print("Content-Length: %lld\r\n\r\n", d->length - start);
+			while((n = pread(fd, buf, sizeof(buf), start)) > 0){
+				if(write(1, buf, n) != n)
+					return -1;
+				start += n;
+			}
+		} else
 		if(end > start){
+			headers(file, d);
 			print("Content-Length: %lld\r\n\r\n", end - start);
 			if(nobody)
 				goto Out;
@@ -497,6 +527,7 @@ Content:
 				start += n;
 			}
 		} else {
+			headers(file, d);
 			print("\r\n");
 			if(nobody)
 				goto Out;
