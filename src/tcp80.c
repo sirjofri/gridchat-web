@@ -491,7 +491,7 @@ Filecont:
 Content:
 		if(start == d->length){   /* long polling */
 			while(pread(fd, buf, 1, start) == 0){
-				; /* do nothing, wait for bytes to read */
+				sleep(100); /* do nothing, wait for bytes to read */
 			}
 			free(d);
 			if((d = dirfstat(fd)) == nil){
@@ -584,16 +584,18 @@ httppost(void)
 
 	h = findhdr(nil, "Content-Length");
 	bytes = atoi(h->val);
+	
+	fprint(2, "Expecting %d bytes data\n", bytes);
 
 	while(bytes > 0){
 		n = bytes < sizeof(buf) ? bytes : sizeof(buf);
-		if((n = read(0, buf, n)) < 0){
+		if((n = read(0, buf, n)) != n){
 			close(fd);
 			status = HTTP500;
 			errorout(0, 0, status);
 			return -1;
 		}
-		if((n = write(fd, buf, n)) < 0){
+		if(write(2, buf, n) != n){
 			close(fd);
 			status = HTTP500;
 			errorout(0, 0, status);
@@ -601,6 +603,13 @@ httppost(void)
 		}
 		bytes -= n;
 	}
+	
+	fprint(2, "Ready reading\n");
+	
+	respond(HTTP200);
+	print("Content-Type: text/plain\r\n"
+		"Content-Length: 8\r\n\r\n"
+		"200 OK\r\n");
 
 	close(fd);
 	return 0;

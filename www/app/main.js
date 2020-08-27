@@ -96,14 +96,14 @@ send = () => {
 	log("send");
 	var headers;
 	fetch("/chat", {
-		method: "PUT",
-		body: (getUser() + " → " + data)
+		method: "POST",
+		body: (getUser() + " " + data + "\r\n\r\n")
 	})
 	.then((resp) => {
-		log("PUT data");
+		log("POST data");
 	})
 	.catch((error) => {
-		log("PUT error: " + error);
+		log("POST error: " + error);
 	});
 };
 
