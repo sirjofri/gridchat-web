@@ -548,7 +548,7 @@ httppost(void)
 {
 	char buf[8192];
 	char *status, *file;
-	int fd, bytes, n;
+	int fd, bytes, n, m;
 	Pair *h;
 	Dir *d;
 
@@ -588,13 +588,15 @@ httppost(void)
 	fprint(2, "Expecting %d bytes data\n", bytes);
 
 	while(bytes > 0){
-		n = bytes < sizeof(buf) ? bytes : sizeof(buf);
-		if((n = read(0, buf, n)) != n){
+		m = bytes < sizeof(buf) ? bytes : sizeof(buf);
+		fprint(2, "Reading %d bytes data\n", m);
+		if((n = read(0, buf, m)) != m){
 			close(fd);
 			status = HTTP500;
 			errorout(0, 0, status);
 			return -1;
 		}
+		fprint(2, "read %d bytes data\n", n);
 		if(write(2, buf, n) != n){
 			close(fd);
 			status = HTTP500;
