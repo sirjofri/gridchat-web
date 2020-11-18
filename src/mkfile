@@ -1,7 +1,10 @@
 </$objtype/mkfile
 
+BIN=../bin
 TARG=getfilerange
 OFILES=getfilerange.$O
-BIN=../bin
+
+stub:V:
+	mkdir -p $BIN/ip/httpd
 
 </sys/src/cmd/mkone

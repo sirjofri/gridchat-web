@@ -2,7 +2,7 @@
 	"name": "gridchat web",
 	"short_name": "gridchat",
 	"lang": "en-US",
-	"start_url": "/app/index.html",
+	"start_url": "/index.html",
 	"display": "standalone",
 	"orientation": "portrait",
 	"background_color": "#3E4EB8",

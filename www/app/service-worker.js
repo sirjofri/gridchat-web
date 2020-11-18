@@ -1,9 +1,9 @@
 var cacheName = "gridcache";
 var filesToCache = [
-	"/app/",
-	"/app/index.html",
-	"/app/main.js",
-	"/app/main.css",
+	"/",
+	"/index.html",
+	"/main.js",
+	"/main.css",
 ];
 
 self.addEventListener("install", (e) => {

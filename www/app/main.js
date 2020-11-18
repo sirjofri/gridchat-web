@@ -7,11 +7,13 @@ window.onload = () => {
 	if(localStorage.getItem("autosendjoin") == "true") {
 		autosend("JOIN " + getUser() + " to chat (web client)");
 	}
-	loadchat(true);
+//	loadchat(true);
 	window.addEventListener("resize", () => {
 		Get("chatoutput").scrollTop = Get("chatoutput").scrollHeight;
 	});
 };
+
+var ws;
 
 canScroll = () => {
 	var o = Get("chatoutput");
@@ -30,6 +32,24 @@ initialize = () => {
 			e.preventDefault();
 		}
 	});
+
+	try{
+		ws = new WebSocket("ws://"+location.host+"/magic/websocket");
+		ws.onopen = function(ev){
+			console.log(ev);
+		};
+		ws.onclose = function(ev){
+			console.log(ev);
+		};
+		ws.onerror = function(ev){
+			console.log(ev);
+		};
+		ws.onmessage = function(ev){
+			console.log(ev);
+		};
+	}catch(e){
+		console.error(e);
+	}
 };
 
 reloadform = () => {
