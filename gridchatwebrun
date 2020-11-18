@@ -16,10 +16,37 @@ fn sigkill{
 	exit
 }
 
-log bind `{pwd}^/bin
-bind -b `{pwd}^/bin /bin
+fn copybins{
+	log copy binaries...
+	bins=(\
+		echo\
+		rc-httpd/handlers\
+		date\
+		read\
+		sed\
+		awk\
+		test\
+		urlencode\
+		ls\
+		file\
+		cat\
+		bc\
+		dd\
+		mkdir\
+		bind\
+		aux/listen\
+	)
+	for(i in $bins)
+		cp /bin/$i /tmp/bin/$i
+	log done copying
+}
 
 ramfs
+mkdir -p /tmp/bin/^(rc-httpd aux)
+log bind `{pwd}^/bin
+bind -b `{pwd}^/bin /tmp/bin
+copybins
+bind -b /tmp/bin /bin
 mkdir -p /tmp/www
 
 if(! test -r /n/chat/chat){
