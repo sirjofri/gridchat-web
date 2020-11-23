@@ -48,6 +48,10 @@ bind -b `{pwd}^/bin /tmp/bin
 copybins
 bind -b /tmp/bin /bin
 mkdir -p /tmp/www
+cat <<EOF >/tmp/www/robots.txt
+User-agent: *
+Disallow: /
+EOF
 
 if(! test -r /n/chat/chat){
 	log /n/chat/chat not available!
