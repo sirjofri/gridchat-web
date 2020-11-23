@@ -41,7 +41,7 @@ fn copybins{
 		dd\
 		mkdir\
 		bind\
-		aux/listen\
+		aux/listen1\
 	)
 	for(i in $bins)
 		cp /bin/$i /tmp/bin/$i
