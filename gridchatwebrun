@@ -43,9 +43,9 @@ fn copybins{
 
 ramfs
 mkdir -p /tmp/bin/^(rc-httpd aux)
-log bind `{pwd}^/bin
-bind -b `{pwd}^/bin /tmp/bin
 copybins
+log bind `{pwd}^/bin
+bind -a `{pwd}^/bin /tmp/bin
 bind -b /tmp/bin /bin
 mkdir -p /tmp/www
 cat <<EOF >/tmp/www/robots.txt
