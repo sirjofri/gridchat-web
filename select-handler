@@ -14,6 +14,8 @@ if(~ $PATH_INFO '/app/')
 if(~ $PATH_INFO '/app')
 	PATH_INFO='/app/index.html'
 
+authorize
+
 # "select handler"
 if(~ `{basename -d $PATH_INFO} '/app')
 	exec serve-static-modern

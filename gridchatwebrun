@@ -20,7 +20,14 @@ fn copybins{
 	log copy binaries...
 	bins=(\
 		echo\
-		rc-httpd/handlers\
+		rc-httpd/handlers/authorize\
+		rc-httpd/handlers/cgi\
+		rc-httpd/handlers/dir-index\
+		rc-httpd/handlers/error\
+		rc-httpd/handlers/redirect\
+		rc-httpd/handlers/serve-static\
+		rc-httpd/handlers/static-or-cgi\
+		rc-httpd/handlers/static-or-index\
 		date\
 		read\
 		sed\
@@ -41,8 +48,11 @@ fn copybins{
 	log done copying
 }
 
+auth/factotum -n
+echo 'key proto=dp9ik user=grid dom=nope !password=glenda' >/mnt/factotum/ctl
+
 ramfs
-mkdir -p /tmp/bin/^(rc-httpd aux)
+mkdir -p /tmp/bin/^(rc-httpd/handlers aux)
 copybins
 log bind `{pwd}^/bin
 bind -a `{pwd}^/bin /tmp/bin
